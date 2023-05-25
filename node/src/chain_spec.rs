@@ -1,6 +1,6 @@
 use node_template_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY,
+	AccountId, AssetsConfig, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature,
+	SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -124,6 +124,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	))
 }
 
+const KFE: u32 = 0;
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
@@ -132,6 +134,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
+	let alice = &endowed_accounts[0];
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -150,6 +153,20 @@ fn testnet_genesis(
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
+		},
+		assets: AssetsConfig {
+			assets: vec![
+				// id, owner, is_sufficient, min_balance
+				(KFE, alice.clone(), true, 1),
+			],
+			metadata: vec![
+				// id, name, symbol, decimals
+				(KFE, "Coffee".into(), "KFE".into(), 10),
+			],
+			accounts: vec![
+				// id, owner, balance
+				(KFE, alice.clone(), 100),
+			],
 		},
 		transaction_payment: Default::default(),
 	}
