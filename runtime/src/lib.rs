@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -273,6 +274,38 @@ impl pallet_template::Config for Runtime {
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 }
 
+
+parameter_types! {
+	pub const AssetDeposit: Balance = 10 * DOLLARS;
+	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
+	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+}
+
+impl pallet_assets::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = u128;
+	type AssetId = u32;
+	type AssetIdParameter = codec::Compact<u32>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = ConstU128<DOLLARS>;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type CallbackHandle = ();
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type RemoveItemsLimit = ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -288,6 +321,7 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
+		Assets: pallet_assets,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 	}
@@ -578,6 +612,13 @@ mod tests {
 	use frame_support::traits::WhitelistedStorageKeys;
 	use sp_core::hexdisplay::HexDisplay;
 	use std::collections::HashSet;
+
+	#[test]
+	fn get_pallet_by_index() {
+		use frame_support::traits::PalletInfoAccess;
+		let asset_index = Assets::index();
+		println!("asset index is {:?}", asset_index);
+	}
 
 	#[test]
 	fn check_whitelist() {
