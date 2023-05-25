@@ -116,4 +116,9 @@ try-runtime = [
 	"pallet-template/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+
 ]
+
+# [patch.crates-io]
+# pallet-contracts = { path = "/Users/pg/github/contracts-tmp" }
+# pallet-assets = { path = "/Users/pg/github/assets-tmp"}
